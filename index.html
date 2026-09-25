@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phasmarium, Správce chovu</title>
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+<div id="customModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-content">
+        <h2 id="modalTitle">Potvrzení</h2>
+        <p id="modalMessage" style="font-size: 1.8rem; margin-bottom: 40px;"></p>
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <button id="modalConfirm" class="danger">ANO, POTVRDIT</button>
+            <button id="modalCancel" class="secondary">ZRUŠIT</button>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <header>
+        <h1>Phasmarium v4 🌿</h1>
+        <div class="toolbar">
+            <button class="secondary" onclick="exportData()">💾 Exportovat zálohu</button>
+            <button class="secondary" onclick="document.getElementById('importInput').click()">📂 Nahrát zálohu</button>
+            <input type="file" id="importInput" style="display:none" accept=".json" onchange="importData(event)">
+        </div>
+    </header>
+
+    <div class="alert-zone">
+        <div id="sprayIncubatorAlert" class="alert-strip" role="alert">⚠️ DNES NEROSEN INKUBÁTOR!</div>
+        <div id="sprayTerrariumAlert" class="alert-strip" role="alert">⚠️ DNES NEROSENO TERÁRIUM!</div>
+        <div id="foodAlert" class="alert-strip" role="alert">🍎 JE ČAS VYMĚNIT KRMENÍ!</div>
+    </div>
+
+<div class="section" id="dashboard">
+    <h2>📊 Přehled</h2>
+
+    <div class="dashboard-grid">
+        <div class="dashboard-card">
+            <div>🥚 Vajíčka</div>
+            <strong id="statEggs">0</strong>
+        </div>
+
+        <div class="dashboard-card">
+            <div>💦 Rosení</div>
+            <strong id="statSpray">-</strong>
+        </div>
+
+        <div class="dashboard-card">
+            <div>🌿 Krmení</div>
+            <strong id="statFood">-</strong>
+        </div>
+
+        <div class="dashboard-card">
+            <div>🧽 Čištění</div>
+            <strong id="statClean">-</strong>
+        </div>
+    </div>
+</div>
+
+    <!-- INKUBÁTOR -->
+<section class="section">
+    <h2 onclick="toggleSection(this)" class="section-header">🥚 Inkubátor ⬇</h2>
+    <div class="section-content">
+        <button onclick="logCare('lastSprayIncubator')">💦 Rosit inkubátor teď</button>
+<button onclick="toggleForm('incubatorForm')" class="secondary">➕ Přidat snůšku</button>
+        
+<form id="incubatorForm" onsubmit="addClutch(event)" style="display:none; margin-top: 30px;">
+            <div class="form-group">
+                <label for="clutchId">Název/ID snůšky:</label>
+                <input type="text" id="clutchId" required placeholder="Např. Giganteum A">
+            </div>
+            <div class="form-group">
+                <label for="clutchDate">Datum nakladení:</label>
+                <input type="date" id="clutchDate" required>
+            </div>
+            <div class="form-group">
+                <label for="clutchHatch">Doba líhnutí (měsíce):</label>
+                <input type="number" id="clutchHatch" value="6" min="1">
+            </div>
+            <button type="submit" class="secondary">➕ Přidat snůšku</button>
+        </form>
+
+        <div id="clutchList" aria-live="polite"></div>
+</div>
+    </section>
+
+    <!-- TERÁRIUM -->
+<section class="section">
+        <h2 onclick="toggleSection(this)" class="section-header">🏠 Terárium ⬇</h2>
+        <div class="section-content">
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button onclick="logCare('lastSprayTerrarium')">💦 Rosit terárium teď</button>
+            <button onclick="logCare('lastFood')">🌿 Vyměnit krmení teď</button>
+            <button onclick="logCare('lastClean')">🧽 Vyčistit terárium teď</button>
+        </div>
+
+        <div style="background: #000; padding: 20px; border: 2px dashed var(--accent-color); margin-top: 30px; border-radius: 15px;">
+            <h3>📊 Sběr vajíček</h3>
+            <div class="form-group" style="display: flex; gap: 15px;">
+                <input type="number" id="eggCount" value="0">
+                <button onclick="addEggHistory()" style="width: auto;">Uložit</button>
+            </div>
+            <p style="font-size: 1.6rem;">Celkem sebráno: <strong id="totalEggs" style="color: var(--accent-color);">0</strong></p>
+<div id="eggHistoryShort" class="history-list"></div>
+        </div>
+
+        <div class="history-list" id="careLog">
+            <strong>Poslední úkony v deníku:</strong>
+            <div id="careLogList"></div>
+        </div>
+        </div>
+    </section>
+
+    <!-- JEDNOTLIVCI -->
+<section class="section">
+        <h2 onclick="toggleSection(this)" class="section-header">🐜 Jednotlivci ⬇</h2>
+        <div class="section-content">
+
+<button onclick="toggleForm('individualForm')" class="secondary">➕ Přidat jedince</button>
+
+<form id="individualForm" onsubmit="addIndividual(event)" style="display:none;">
+            <div class="form-group">
+                <label for="indName">Jméno/Označení:</label>
+                <input type="text" id="indName" required placeholder="Např. Samice modrá">
+            </div>
+            <button type="submit" class="secondary">➕ Přidat jedince</button>
+        </form>
+
+        <div id="individualList" aria-live="polite"></div>
+        </div>
+    </section>
+
+<section class="section">
+    <h2 onclick="toggleSection(this)" class="section-header">📝 Poznámky ⬇</h2>
+
+    <div class="section-content">
+        <div class="form-group">
+            <label for="noteText">Nová poznámka:</label>
+            <textarea id="noteText" rows="5" placeholder="Např. Dnes se jedna lupenitka držela stranou..."></textarea>
+        </div>
+
+        <button onclick="addNote()" class="secondary">💾 Uložit poznámku</button>
+
+        <button onclick="toggleForm('notesListBox')" class="secondary">📚 Zobrazit / skrýt uložené poznámky</button>
+
+        <div id="notesListBox" class="history-list" style="display:none;">
+            <div id="notesList"></div>
+        </div>
+    </div>
+</section>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
